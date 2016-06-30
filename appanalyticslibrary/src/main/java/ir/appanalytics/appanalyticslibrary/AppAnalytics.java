@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ir.appanalytics.appanalyticslibrary.Helpers.Convertor;
+import ir.appanalytics.appanalyticslibrary.Models.AppAnalyticsEvent;
 import ir.appanalytics.appanalyticslibrary.Models.DeviceInfo;
 import ir.appanalytics.appanalyticslibrary.Models.SimpleResult;
 import ir.appanalytics.appanalyticslibrary.Models.AppAnalyticsService;
@@ -162,7 +164,7 @@ public class AppAnalytics {
 
             Call<SimpleResult> callDeviceInfo = appService.setDeviceInfo(uuid,df);
             Log.d("Msg:setDeviceInfo:", callDeviceInfo.request().url().toString());
-            Log.d("Msg:setDeviceInfo:", bodyToString(callDeviceInfo.request().body()));
+            Log.d("Msg:setDeviceInfo:", Convertor.requestBodyToString(callDeviceInfo.request().body()));
             try {
                 callDeviceInfo.enqueue(new Callback<SimpleResult>() {
                     @Override
@@ -198,7 +200,10 @@ public class AppAnalytics {
 
         String uuid = Settings.Secure.getString(_ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        Call<SimpleResult> call = appService.addEvent(uuid,event_name,event_value);
+        AppAnalyticsEvent event = new AppAnalyticsEvent();
+        event.eventName = event_name;
+        event.eventValue = event_value;
+        Call<SimpleResult> call = appService.addEvent(uuid,event);
 
         Log.d("Msg:", call.request().url().toString());
         try {
@@ -217,18 +222,5 @@ public class AppAnalytics {
             Log.d("Exception:", exc.toString());
         }
         Log.d("Msg:", "End");
-    }
-    private String bodyToString(final RequestBody request) {
-        try {
-            final RequestBody copy = request;
-            final Buffer buffer = new Buffer();
-            if (copy != null)
-                copy.writeTo(buffer);
-            else
-                return "";
-            return buffer.readUtf8();
-        } catch (final IOException e) {
-            return "did not work";
-        }
     }
 }
